@@ -10,8 +10,8 @@ object HelloWorld {
 
   def main(args: Array[String]): Unit = {
 
-    println("Hello world!")
-
+    val dateDownload = "2018-03-01-0"
+    val extensionFile = ".json.gz"
 
     val conf = new SparkConf()
       .setMaster("local[2]")
@@ -23,23 +23,16 @@ object HelloWorld {
 
     val schema = ScalaReflection.schemaFor[GitHubData].dataType.asInstanceOf[StructType]
 
-    val jsonDF = sqlContext.read.json("C:\\Users\\jhero\\IdeaProjects\\BigData\\download\\2018-03-01-0.json")
+    val jsonDF = sqlContext.read.json("download\\")
 
     val newJsonDF = jsonDF.withColumnRenamed("default","type")
 
     jsonDF.show()
+    jsonDF.printSchema()
 
+    val u = new Utilities()
 
-
-
-
-
-    //val u = new Utilities()
-
-    //u.fileDownloader("","")
+   u.fileDownloader(dateDownload)
   }
-
-
-
 
 }
