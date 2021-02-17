@@ -4,9 +4,9 @@ case class GitHubDataForSchema(
                       id: Long,
                       `default`: String,
                       actor: Actor,
-                      repo: Repo,
+                      repo: String,
                       payload: Payload,
                       public: Boolean,
-                      created_at: String
-
+                      created_at: String,
+                      org: String
                      )
