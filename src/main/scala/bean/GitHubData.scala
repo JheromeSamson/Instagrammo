@@ -1,12 +1,12 @@
 package bean
 
 case class GitHubData(
-                       id: Long,
-                       `default`: String,
+                       id: String,
+                       `type`: String,
                        actor: Actor,
                        repo: String,
                        payload: Payload,
-                       public: Boolean,
+                       publicField: Boolean,
                        created_at: String,
                        org: String
                      )

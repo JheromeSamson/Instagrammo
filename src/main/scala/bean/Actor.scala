@@ -1,8 +1,9 @@
 package bean
 
+
 case class Actor(
-                id: Long,
-                login: String,
+                id: String,
+                login: String ,
                 display_login: String,
                 gravatar_id: String,
                 url: String,

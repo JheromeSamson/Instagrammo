@@ -1,12 +1,12 @@
 package bean
 
 case class GitHubDataForSchema(
-                      id: Long,
+                      id: BigInt,
                       `default`: String,
                       actor: Actor,
                       repo: String,
                       payload: Payload,
-                      public: Boolean,
+                      `public`: Boolean,
                       created_at: String,
                       org: String
                      )
