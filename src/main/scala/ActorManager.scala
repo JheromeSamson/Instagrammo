@@ -29,6 +29,13 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
    // NumeroEventDivisiPerTypeActorRepoSecondi()
 
     MassimoEventPerSecondo()
+    MinimoEventPerSecondo()
+    MassimoEventPerAttore()
+    MinimoEventPerAttore()
+    MassimoEventPerRepo()
+    MinimoEventPerRepo()
+
+
   }
 
 
@@ -126,20 +133,42 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
 
   //Trovare il massimo numero di «event» per «actor»;
   def MassimoEventPerAttore() : Unit = {
-    val idEventRDD = rdd.map(x => ((x.`type`, x.actor), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+    val idEventRDD = rdd.map(x => ( x.actor, 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
 
     val max = idEventRDD.reduce((value1, value2)=> {
       if (value1._2 > value2._2) value1 else value2
     })
   }
+
   //Trovare il minimo numero di «event» per «actor»;
   def MinimoEventPerAttore() : Unit = {
-    val idEventRDD = rdd.map(x => ((x.`type`, x.actor), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+    val idEventRDD = rdd.map(x => ( x.actor, 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
 
     val min = idEventRDD.reduce((value1, value2)=> {
       if (value1._2 > value2._2) value2 else value1
     })
   }
+
+  //Trovare il massimo numero di «event» per «repo»;
+  def MassimoEventPerRepo() : Unit = {
+    val idEventRDD = rdd.map(x => (x.repo, 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+
+    idEventRDD.reduce((value1, value2) => {
+      if (value1._2 > value2._2) value1 else value2
+    })
+  }
+
+  //Trovare il minimo numero di «event» per «repo»;
+  def MinimoEventPerRepo() : Unit = {
+    val idEventRdd = rdd.map(x => (x.repo, 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+
+    idEventRdd.reduce((value1,value2) => {
+      if(value1._2 > value2._2) value2 else value2
+    })
+  }
+
+
+
 
 
 
