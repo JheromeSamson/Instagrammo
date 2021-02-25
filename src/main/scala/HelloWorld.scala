@@ -1,13 +1,11 @@
 import bean.{Actor, Author, GitHubData, GitHubDataForSchema, Payload}
 import org.apache.spark
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Encoders, Row, SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import utils.Utilities
-import org.apache.spark.sql.{Encoder, Encoders}
-import org.apache.spark.sql.SparkSession
 
 object HelloWorld {
 
@@ -35,20 +33,13 @@ object HelloWorld {
 
     createTableFromJson(newJsonDF1, sqlContext)
 
-    val data = sqlContext.sql("select * from DataExtracted")
+    val data : Dataset[Row] = sqlContext.sql("select * from DataExtracted")//.limit(2000)
 
     import sqlContext.implicits._
 
-    val rdd = data.as[GitHubData].rdd
+    val rdd : RDD[GitHubData] = data.as[GitHubData].rdd
 
-    //rdd.foreach(f => println(f))
-
-    val schema_actor = ScalaReflection.schemaFor[Actor].dataType.asInstanceOf[StructType]
-
-    /**  GETTING RDD */
-
-    //getting actor rdd
-     val actor_rdd = sqlContext.read.json("download\\2018-03-01-0.json").select("actor").rdd
+    new ActorManager(rdd, sqlContext).Actor()
 
     //author actor rdd
     val author_rdd = sqlContext.read.json("download\\2018-03-01-0.json").select("payload.commits").rdd
@@ -59,14 +50,7 @@ object HelloWorld {
     //getting type rdd
     val type_rdd = sqlContext.read.json("download\\2018-03-01-0.json").select("type").rdd
 
-    repo_rdd.foreach(f => println(f))
-
-
-
-
-
-    //new ActorManager(rdd)
-
+    //rdd.foreach(f => println(f))
 /*
     val jsonSeq = Seq(newJsonDF)
 
@@ -79,8 +63,6 @@ object HelloWorld {
       StructField("copertina", StringType, false),
       StructField("anno", StringType, false),
       StructField("autore", IntegerType, false)))
-
-    val jsDF = sqlContext.createDataFrame(rdd,schema)
 
 */
   }
