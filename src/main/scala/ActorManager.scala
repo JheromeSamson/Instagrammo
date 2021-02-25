@@ -167,7 +167,22 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
     })
   }
 
+  //Trovare il massimo/minimo numero di «event» per secondo per «actor»;
+  def MassimoEventPerSecondoAttore() : Unit = {
+    val idEventRdd = rdd.map(x => ((x.actor, new DateTime(x.created_at.getTime).getSecondOfMinute), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
 
+    idEventRdd.reduce((value1,value2) => {
+      if(value1._2 > value2._2) value2 else value2
+    })
+  }
+
+  def MinimooEventPerSecondoAttore() : Unit = {
+    val idEventRdd = rdd.map(x => ((x.actor, new DateTime(x.created_at.getTime).getSecondOfMinute), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+
+    idEventRdd.reduce((value1, value2) => {
+      if(value1._2 < value2._2) value1 else value2
+    })
+  }
 
 
 
