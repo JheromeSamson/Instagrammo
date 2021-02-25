@@ -6,6 +6,8 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Dataset, Row, SQLContext}
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
 
 class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
 
@@ -22,7 +24,11 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
 
     //NumeroEventPresente(pairRdd)
 
-    NumeroEventDivisiPerTypeActor(rddActor)
+    //NumeroEventDivisiPerTypeActor()
+
+   // NumeroEventDivisiPerTypeActorRepoSecondi()
+
+    MassimoEventPerSecondo()
   }
 
 
@@ -75,11 +81,64 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
   }
 
   //Contare il numero di «event», divisi per «type» e «actor»;
-  def NumeroEventDivisiPerTypeActor(rddActor: RDD[Actor]) : Unit = {
-    val idEventRDD = rdd.map(x => (x.`type`, x.actor))
-    val totaleTypePerActor= idEventRDD.map(x => (x._2,1)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+  def NumeroEventDivisiPerTypeActor() : Unit = {
+    val idEventRDD = rdd.map(x => ((x.`type`, x.actor), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
 
-    totaleTypePerActor.foreach(x => println(x))
+    idEventRDD.foreach(x => println(x))
+  }
+
+  //Contare il numero di «event», divisi per «type», «actor», «repo»;
+  def NumeroEventDivisiPerTypeActorRepo() : Unit  ={
+    val idEventRDD  = rdd.map(x=> ((x.`type`, x.actor, x.repo), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+    idEventRDD.foreach(x => println(x))
+  }
+
+  // Contare il numero di «event», divisi per «type», «actor», «repo» e secondo (il secondo è inteso come per tutto quel secondo. Quindi bisogna trasformare il timestamp in modo da avere solo il valore dei secondi, poi raggruppiamo solo su questo campo.);
+  def NumeroEventDivisiPerTypeActorRepoSecondi() : RDD[((String,Actor,String,Int), Long)] =  {
+
+    return rdd.map(x=> {
+      ((x.`type`, x.actor, x.repo, new DateTime(x.created_at.getTime).getSecondOfMinute), 1L)
+    }).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+
+  }
+
+  //Trovare il massimoo numero di «event» per secondo
+
+  def MassimoEventPerSecondo() : Unit = {
+     val rdd= NumeroEventDivisiPerTypeActorRepoSecondi()
+
+     val max = rdd.reduce((value1, value2)=> {
+         if (value1._2 < value2._2) value2 else value1
+       })
+
+    println(max)
+  }
+
+  //Trovare il minimo numero di «event» per secondo
+  def MinimoEventPerSecondo() : Unit = {
+    val rdd= NumeroEventDivisiPerTypeActorRepoSecondi()
+
+    val min = rdd.reduce((value1, value2)=> {
+      if (value1._2 > value2._2) value2 else value1
+    })
+    println(min)
+  }
+
+  //Trovare il massimo numero di «event» per «actor»;
+  def MassimoEventPerAttore() : Unit = {
+    val idEventRDD = rdd.map(x => ((x.`type`, x.actor), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+
+    val max = idEventRDD.reduce((value1, value2)=> {
+      if (value1._2 > value2._2) value1 else value2
+    })
+  }
+  //Trovare il minimo numero di «event» per «actor»;
+  def MinimoEventPerAttore() : Unit = {
+    val idEventRDD = rdd.map(x => ((x.`type`, x.actor), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+
+    val min = idEventRDD.reduce((value1, value2)=> {
+      if (value1._2 > value2._2) value2 else value1
+    })
   }
 
 
