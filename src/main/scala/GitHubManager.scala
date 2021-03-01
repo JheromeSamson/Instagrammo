@@ -9,35 +9,53 @@ import org.apache.spark.sql.{Dataset, Row, SQLContext}
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 
-class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
+class GitHubManager(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
+
+  var rdd = dataFrameToRDD()
 
   def Actor(): Unit = {
 
 
-    var dataframe : sql.DataFrame = ActorManagerRddToDataFrame()
+    //var dataframe : sql.DataFrame = ActorManagerRddToDataFrame()
 
-    val pairRdd : RDD[(String, Actor)] = ActorManagerRddToPairRdd()
+    //val pairRdd : RDD[(String, Actor)] = ActorManagerRddToPairRdd()
 
-    var rddActor : RDD[Actor] = ActorManagerRddToRdd()
+    //var rddActor : RDD[Actor] = ActorManagerRddToRdd()
 
     //var dataset : Dataset[Actor] = ActorManagerRddToDataSet(dataframe)
 
+    //new ManagerRDD(rdd, SQLContext)
+
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroEventPerTypeActorRepoOra()
+
+
+   // ActorManagerRddToDataFrame()
     //NumeroEventPresente(pairRdd)
-
     //NumeroEventDivisiPerTypeActor()
-
-   // NumeroEventDivisiPerTypeActorRepoSecondi()
-
-    MassimoEventPerSecondo()
-    MinimoEventPerSecondo()
-    MassimoEventPerAttore()
-    MinimoEventPerAttore()
-    MassimoEventPerRepo()
-    MinimoEventPerRepo()
-
+    //NumeroEventDivisiPerTypeActorRepoSecondi()
+    //MassimoPerSecondo()
+    //MinimoPerSecondo()
+    //MassimoPerAttore()
+    //MinimoPerAttore()
+    //MassimoPerRepo()
+   // MinimoPerRepo()
 
   }
+/*
+  def rddToDataFrame() : Unit = {
 
+    val dataStructGitHub = ScalaReflection.schemaFor[GitHubData].dataType.asInstanceOf[StructType]
+
+    val gitHubDataRow = dataFrameToRDD().map(x=> {
+      Row(x.id, x.`type`, x.actor, x.repo, x.payload, x.publicField, x.created_at, x.org)
+    })
+
+    val dataFrame = SQLContext.createDataFrame(gitHubDataRow, dataStructGitHub)
+
+    dataFrame.show()
+
+   // return dataFrame
+  }
 
   def ActorManagerRddToDataFrame(): sql.DataFrame = {
 
@@ -62,11 +80,19 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
   }
 
   def ActorManagerRddToPairRdd(): RDD[(String, Actor)] = {
-    return rdd.map(x => (x.id, x.actor))
+    return dataFrame.map(x => (x.id, x.actor))
   }
 
   def ActorManagerRddToRdd() : RDD[Actor] = {
-    return rdd.map(x => x.actor)
+    return dataFrame.map(x => x.actor)
+  }
+*/
+  def dataFrameToRDD() : RDD[GitHubData] = {
+    val data : Dataset[Row] = SQLContext.sql("select * from DataExtracted")//.limit(2000)
+
+    import SQLContext.implicits._
+
+    return data.as[GitHubData].rdd
   }
 /*
   def ActorManagerRddToDataSet(dataFrameActor : sql.DataFrame) :  Dataset[Actor] = {
@@ -111,7 +137,7 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
 
   //Trovare il massimoo numero di «event» per secondo
 
-  def MassimoEventPerSecondo() : Unit = {
+  def MassimoPerSecondo() : Unit = {
      val rdd= NumeroEventDivisiPerTypeActorRepoSecondi()
 
      val max = rdd.reduce((value1, value2)=> {
@@ -122,7 +148,7 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
   }
 
   //Trovare il minimo numero di «event» per secondo
-  def MinimoEventPerSecondo() : Unit = {
+  def MinimoPerSecondo() : Unit = {
     val rdd= NumeroEventDivisiPerTypeActorRepoSecondi()
 
     val min = rdd.reduce((value1, value2)=> {
@@ -132,7 +158,7 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
   }
 
   //Trovare il massimo numero di «event» per «actor»;
-  def MassimoEventPerAttore() : Unit = {
+  def MassimoPerAttore() : Unit = {
     val idEventRDD = rdd.map(x => ( x.actor, 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
 
     val max = idEventRDD.reduce((value1, value2)=> {
@@ -141,7 +167,7 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
   }
 
   //Trovare il minimo numero di «event» per «actor»;
-  def MinimoEventPerAttore() : Unit = {
+  def MinimoPerAttore() : Unit = {
     val idEventRDD = rdd.map(x => ( x.actor, 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
 
     val min = idEventRDD.reduce((value1, value2)=> {
@@ -150,7 +176,7 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
   }
 
   //Trovare il massimo numero di «event» per «repo»;
-  def MassimoEventPerRepo() : Unit = {
+  def MassimoPerRepo() : Unit = {
     val idEventRDD = rdd.map(x => (x.repo, 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
 
     idEventRDD.reduce((value1, value2) => {
@@ -159,7 +185,7 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
   }
 
   //Trovare il minimo numero di «event» per «repo»;
-  def MinimoEventPerRepo() : Unit = {
+  def MinimoPerRepo() : Unit = {
     val idEventRdd = rdd.map(x => (x.repo, 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
 
     idEventRdd.reduce((value1,value2) => {
@@ -167,16 +193,16 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
     })
   }
 
-  //Trovare il massimo/minimo numero di «event» per secondo per «actor»;
-  def MassimoEventPerSecondoAttore() : Unit = {
+  //Trovare il massimo numero di «event» per secondo per «actor»;
+  def MassimoPerSecondoAttore() : Unit = {
     val idEventRdd = rdd.map(x => ((x.actor, new DateTime(x.created_at.getTime).getSecondOfMinute), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
 
     idEventRdd.reduce((value1,value2) => {
       if(value1._2 > value2._2) value2 else value2
     })
   }
-
-  def MinimooEventPerSecondoAttore() : Unit = {
+  //Trovare il minimo numero di «event» per secondo per «actor»;
+  def MinimooPerSecondoAttore() : Unit = {
     val idEventRdd = rdd.map(x => ((x.actor, new DateTime(x.created_at.getTime).getSecondOfMinute), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
 
     idEventRdd.reduce((value1, value2) => {
@@ -184,20 +210,59 @@ class ActorManager(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
     })
   }
 
+  //Trovare il massimo numero di «event» per secondo per «repo»;
+  def MassimoPerSecondoRepo() : Unit = {
+    val idEventRdd = rdd.map(x => ((x.repo, new DateTime(x.created_at.getTime).getSecondOfMinute), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+
+    idEventRdd.reduce((value1,value2) => {
+      if(value1._2 > value2._2) value2 else value2
+    })
+  }
+
+  //Trovare il minimo numero di «event» per secondo per «repo»;
+  def MinimooPerSecondoRepo() : Unit = {
+    val idEventRdd = rdd.map(x => ((x.repo, new DateTime(x.created_at.getTime).getSecondOfMinute), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+
+    idEventRdd.reduce((value1, value2) => {
+      if(value1._2 < value2._2) value1 else value2
+    })
+  }
+//Trovare il massimo numero di «event» per secondo per «repo» e «actor»;
+  def MassimoPerSecondoRepoAttore() : Unit = {
+    val idEventRdd = rdd.map(x => ((x.repo, x.actor, new DateTime(x.created_at.getTime).getSecondOfMinute), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+
+    idEventRdd.reduce((value1,value2) => {
+      if(value1._2 > value2._2) value2 else value2
+    })
+  }
+
+  //Trovare il minimo numero di «event» per secondo per «repo» e «actor»;
+  def MinimooPerSecondoRepoAttore() : Unit = {
+    val idEventRdd = rdd.map(x => ((x.repo, x.actor, new DateTime(x.created_at.getTime).getSecondOfMinute), 1L)).reduceByKey((contatore1, contatore2) => contatore1 + contatore2)
+
+    idEventRdd.reduce((value1, value2) => {
+      if(value1._2 < value2._2) value1 else value2
+    })
+  }
+
+  //Contare il numero di «commit»;
+  def TotaleCommit() : Unit = {
+    //rdd.map(x => (x.payload.commits.map))
+  }
 
 
 
-/*
-  def createDataFrameStruct(): StructType = StructType(Seq(
-    StructField("id", StringType, true),
-    StructField("login" ,StringType , true),
-    StructField("display_login", StringType, true),
-    StructField("gravatar_id", StringType, true),
-    StructField("url", StringType, true),
-    StructField("avatar_url", StringType, true)
-  ))
+  /*
+    def createDataFrameStruct(): StructType = StructType(Seq(
+      StructField("id", StringType, true),
+      StructField("login" ,StringType , true),
+      StructField("display_login", StringType, true),
+      StructField("gravatar_id", StringType, true),
+      StructField("url", StringType, true),
+      StructField("avatar_url", StringType, true)
+    ))
 
 
 
-*/
+  */
 }

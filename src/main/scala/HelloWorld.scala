@@ -23,7 +23,6 @@ object HelloWorld {
     val sc = new SparkContext(conf)
 
     val sqlContext = new SQLContext(sc)
-
     val schema = ScalaReflection.schemaFor[GitHubDataForSchema].dataType.asInstanceOf[StructType]
 
     val jsonDF = sqlContext.read.json("download\\")
@@ -39,7 +38,9 @@ object HelloWorld {
 
     val rdd : RDD[GitHubData] = data.as[GitHubData].rdd
 
-    new ActorManager(rdd, sqlContext).Actor()
+    new GitHubManager(newJsonDF1, sqlContext).Actor()
+
+
 
     //author actor rdd
     val author_rdd = sqlContext.read.json("download\\2018-03-01-0.json").select("payload.commits").rdd
