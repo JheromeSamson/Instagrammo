@@ -58,7 +58,7 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
   //Contare il numero di «event», divisi per «type», «actor», «repo» e ora
   def NumeroEventPerTypeActorRepoSecondo() : Unit = {
     dataFrame.withColumn("seconds", second(col("created_at")))
-    .groupBy("`type`","actor", "repo", "seconds").count().show()
+    .groupBy("`type`","actor", "repo", "seconds").count()
     dataFrame.show()
   }
 
@@ -100,7 +100,41 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
     df.select("count").groupBy().min().show()
   }
 
+  // Trovare il Massimo numero di event per Attore
+  def NumeroMassimoEventPerSecondoAttore() : Unit = {
+    dataFrame.withColumn("seconds", second(col("created_at")))
+      .groupBy("actor").max().show()
+  }
 
+  // Trovare il Minimo numero di event per Attore
+  def NumeroMinimoEventPerSecondoAttore() : Unit = {
+    dataFrame.withColumn("seconds", second(col("created_at")))
+      .groupBy("actor").min().show()
+  }
+
+  // Trovare il Massimo numero di event per Attore
+  def NumeroMassimoEventPerSecondoRepo() : Unit = {
+    dataFrame.withColumn("seconds", second(col("created_at")))
+      .groupBy("repo").max().show()
+  }
+
+  // Trovare il Minimo numero di event per Attore
+  def NumeroMinimoEventPerSecondoRepo() : Unit = {
+    dataFrame.withColumn("seconds", second(col("created_at")))
+      .groupBy("repo").min().show()
+  }
+
+  // Trovare il Massimo numero di event per Repo Actor
+  def NumeroMassimoEventPerSecondoRepoActor() : Unit = {
+    dataFrame.withColumn("seconds", second(col("created_at")))
+      .groupBy("repo", "actor").max().show()
+  }
+
+  // Trovare il Minimo numero di event per Repo Actor
+  def NumeroMinimoEventPerSecondoRepoActor() : Unit = {
+    dataFrame.withColumn("seconds", second(col("created_at")))
+      .groupBy("repo", "actor").min().show()
+  }
 
 
 }
