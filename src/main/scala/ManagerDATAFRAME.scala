@@ -31,7 +31,8 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
 
   //Contare il numero di «actor»;
   def NumeroActor(): Unit = {
-    dataFrame.select("actor").distinct().count()
+    val num = dataFrame.select("actor").distinct().count()
+      println(num)
   }
 
   //Contare il numero di «repo»;
@@ -136,5 +137,10 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .groupBy("repo", "actor").min().show()
   }
 
+  //num commit
+  def NumeroCommit() : Unit = {
+    val num = dataFrame.select("commit").count()
+    println(num)
+  }
 
 }
