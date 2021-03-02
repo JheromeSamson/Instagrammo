@@ -26,7 +26,7 @@ class GitHubManager(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
 
     //new ManagerRDD(rdd, SQLContext)
 
-    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroEventPerTypeActorRepoOra()
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroMassimoEventPerSecondo()
 
 
    // ActorManagerRddToDataFrame()

@@ -1,6 +1,6 @@
 import org.apache.spark.sql
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.functions.{col, explode,hour,minute,second}
+import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.sql.functions.{col, explode, hour, minute, second}
 
 class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
 
@@ -55,10 +55,25 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
   }
 
   //Contare il numero di «event», divisi per «type», «actor», «repo» e ora
-  def NumeroEventPerTypeActorRepoOra() : sql.DataFrame = {
+  def NumeroEventPerTypeActorRepoSecondo() : sql.DataFrame = {
     dataFrame.withColumn("seconds", second(col("created_at")))
-    .groupBy("`type`","actor", "repo", "seconds").count()
+    .groupBy("`type`","actor", "repo", "seconds").count().show()
+    dataFrame
   }
+
+  // Trovare il massimo numero di event per secondo
+  def NumeroMassimoEventPerSecondo() :  sql.DataFrame = {
+    dataFrame.withColumn("seconds", second(col("created_at")))
+      .groupBy("actor").max()
+  }
+  // Trovare il minimo numero di event per secondo
+  def NumeroMininoEventPerSecondo() :  sql.DataFrame = {
+    dataFrame.withColumn("seconds", second(col("created_at")))
+      .groupBy("actor").min()
+  }
+  // Trovare il massimo numero di event per Actor
+  def NumeroMassimoEventPerActor
+
 
 
 
