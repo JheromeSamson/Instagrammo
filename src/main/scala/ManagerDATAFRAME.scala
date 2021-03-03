@@ -1,6 +1,6 @@
 import org.apache.spark.sql
 import org.apache.spark.sql.{Row, SQLContext}
-import org.apache.spark.sql.functions.{col, explode, hour, minute, second, size}
+import org.apache.spark.sql.functions.{col, explode, hour, max, minute, second, size, sum}
 
 class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
 
@@ -144,7 +144,16 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
   }
   // numero commit per attore
   def NumeroCommitPerActor() : Unit = {
-    dataFrame.withColumn("commit",size(col("payload.commits"))).groupBy("actor","commit").count().show()
+    import org.apache.spark.sql.functions.lit
+    import org.apache.spark.sql.functions.when
+    import org.apache.spark.sql.functions.sum
+    import org.apache.spark.sql.functions.size
+    dataFrame
+      .select("*")
+      .withColumn("commitSize",size(col("payload.commits")))
+      .groupBy("actor").agg(
+      sum("commitSize").as("totSizeCommit")
+    ).show()
 /*
     dataFrame.show()
     val payloadDF = dataFrame.select("payload.*").distinct()
@@ -180,6 +189,72 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
     val c: String = dataFrame.withColumn("prova", col(dataFrame.select(explode(col("commits"))).count())))
 */
   }
+  // Numero commit divisi per type e actor
+  def NumeroCommitPerTypeActor() : Unit = {
+    dataFrame
+      .select("*")
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("`type`", "actor").agg(
+      sum("commitSize").as("totSizeCommit")
+    ).show()
+  }
+
+  // Numero commit divisi per type e ??????actor?????
+  def NumeroCommitPerTypeActorEvent(): Unit = {
+    //dataFrame.withColumn("commitSize", size(col("payload.commits"))).groupBy("`type`","actor")
+  }
+
+  // Numero commit divisi per type e Second
+  def NumeroCommitPerTypeActorSecond(): Unit = {
+    dataFrame
+      .select("*")
+      .withColumn("seconds", second(col("created_at")))
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("`type`", "actor", "seconds" ).agg(
+      sum("commitSize").as("totSizeCommit")
+    ).show()
+  }
+
+  //MASSimo Numero Per Secondo di commit
+  def MassimoCommitPerSecondo(): Unit ={
+
+    import org.apache.spark.sql.functions.max
+    val df = dataFrame
+      .select("*")
+      .withColumn("seconds", second(col("created_at")))
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("seconds" ).agg(
+      sum("commitSize").as("totSizeCommit")
+    )
+
+    df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
+
+  }
+
+  //Minimo Numero di commit per secondo
+  def MinimoCommitPerSecondo(): Unit ={
+
+    import org.apache.spark.sql.functions.min
+    val df = dataFrame
+      .select("*")
+      .withColumn("seconds", second(col("created_at")))
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("seconds" ).agg(
+      sum("commitSize").as("totSizeCommit")
+    )
+
+    df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
+
+  }
+
+
+
+
+
+
+
+
+
 
 
   def MassimoCommitPerSecondi() : Unit = {
