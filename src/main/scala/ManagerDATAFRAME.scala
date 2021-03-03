@@ -1,6 +1,6 @@
 import org.apache.spark.sql
 import org.apache.spark.sql.{Row, SQLContext}
-import org.apache.spark.sql.functions.{col, explode, hour, minute, second}
+import org.apache.spark.sql.functions.{col, explode, hour, minute, second, size}
 
 class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
 
@@ -8,7 +8,7 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
   def SingoliActor(): Unit =
     dataFrame.select("actor").distinct().show()
 
-//Trovare i singoli «actor»;
+//Trovare i singoli «actor» commits ;
   def SingoliAuthorNelCommit(): Unit = {
 
     //dataFrame.show()
@@ -142,5 +142,66 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
     val num = dataFrame.select("commit").count()
     println(num)
   }
+  // numero commit per attore
+  def NumeroCommitPerActor() : Unit = {
+    dataFrame.withColumn("commit",size(col("payload.commits"))).groupBy("actor","commit").count().show()
+/*
+    dataFrame.show()
+    val payloadDF = dataFrame.select("payload.*").distinct()
+
+    val commitsDF = payloadDF.select(explode(col("commits"))).select("col.*")
+
+    import org.apache.spark.sql.functions.lit
+    import org.apache.spark.sql.functions.when
+    import org.apache.spark.sql.functions.size
+
+
+    val payloadDF = dataFrame.withColumn("actor", lit(dataFrame.select("payload.*").select("commits[3]").count())).show()
+    lit(dataFrame.select("payload.*").select("commits[3]"))
+
+
+      dataFrame
+      .withColumn("payload",lit(dataFrame.withColumn("commit",size(col("payload.commits"))).
+      ))
+      .groupBy("actor", "payload", "arrayCommit", "actor").count().show()
+
+
+      lit(when(dataFrame.select("payload.*").select("commits[3]"))))
+      .groupBy(col("actor"), ("payload"))
+      select("payload.*").selectExpr("commits[3]")
+    payloadDF.selectExpr("commits[3]").show()
+
+    val commitsDF = payloadDF.select(explode(col("commits"))).select("col.*")
+
+    val payload : String= dataFrame.select(explode(col("payload")))
+
+    val commitsDF = dataFrame.select()payloadDF.select(explode(col("commits")))
+
+    val c: String = dataFrame.withColumn("prova", col(dataFrame.select(explode(col("commits"))).count())))
+*/
+  }
+
+
+  def MassimoCommitPerSecondi() : Unit = {
+    import org.apache.spark.sql.functions.lit
+    dataFrame.withColumn("seconds", second(col("created_at")))
+      .select("payload.*").selectExpr("commits[3]")
+      .groupBy("seconds").count().show()
+  }
+
+  //Contare il numero di actor, divisi per type e secondo
+  def NumeroActorPerTypeSecond() : Unit = {
+    val c= dataFrame.withColumn("seconds", second(col("created_at")))
+      .groupBy( "`type`", "seconds","actor").count().show()
+  }
+
+  //Contare il numero di actor, divisi per repo type e secondo
+  def NumeroActorPerRepoTypeSecond() : Unit = {
+    val c= dataFrame.withColumn("seconds", second(col("created_at")))
+      .groupBy( "repo","`type`", "seconds","actor").count().show()
+  }
+
+  //massimo numer
+
 
 }
