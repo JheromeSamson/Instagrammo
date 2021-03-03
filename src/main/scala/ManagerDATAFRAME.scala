@@ -247,36 +247,37 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
 
   }
 
+  //Massimo Numero di commit per actor
+  def MassimoCommitPerActor(): Unit = {
 
+    import org.apache.spark.sql.functions.max
+    val df = dataFrame
+      .select("*")
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("actor" ).agg(
+      sum("commitSize").as("totSizeCommit")
+    )
 
+    df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
 
-
-
-
-
-
-
-
-  def MassimoCommitPerSecondi() : Unit = {
-    import org.apache.spark.sql.functions.lit
-    dataFrame.withColumn("seconds", second(col("created_at")))
-      .select("payload.*").selectExpr("commits[3]")
-      .groupBy("seconds").count().show()
   }
 
-  //Contare il numero di actor, divisi per type e secondo
-  def NumeroActorPerTypeSecond() : Unit = {
-    val c= dataFrame.withColumn("seconds", second(col("created_at")))
-      .groupBy( "`type`", "seconds","actor").count().show()
+  //Numero Minimo commit per actor
+  def MinimoCommitPerActor(): Unit = {
+
+    import org.apache.spark.sql.functions.min
+    val df = dataFrame
+      .select("*")
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("actor" ).agg(
+      sum("commitSize").as("totSizeCommit")
+    )
+
+    df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
+
   }
 
-  //Contare il numero di actor, divisi per repo type e secondo
-  def NumeroActorPerRepoTypeSecond() : Unit = {
-    val c= dataFrame.withColumn("seconds", second(col("created_at")))
-      .groupBy( "repo","`type`", "seconds","actor").count().show()
-  }
 
-  //massimo numer
 
 
 }
