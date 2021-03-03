@@ -32,13 +32,13 @@ object HelloWorld {
 
     createTableFromJson(newJsonDF1, sqlContext)
 
-    val data : Dataset[Row] = sqlContext.sql("select * from DataExtracted")//.limit(2000)
+    val data : Dataset[Row] = sqlContext.sql("select * from DataExtracted").limit(100).toDF()
 
     import sqlContext.implicits._
 
     val rdd : RDD[GitHubData] = data.as[GitHubData].rdd
 
-    new GitHubManager(newJsonDF1, sqlContext).Actor()
+    new GitHubManager(data, sqlContext).Actor()
 
 
 

@@ -1,6 +1,6 @@
 import org.apache.spark.sql
 import org.apache.spark.sql.{Row, SQLContext}
-import org.apache.spark.sql.functions.{col, explode, hour, max, minute, second, size, sum, min, when, count}
+import org.apache.spark.sql.functions.{col, explode, hour, max, minute, second, size, sum, min, when, count, lit}
 
 class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
 
@@ -139,21 +139,31 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
 
   //num commit
   def NumeroCommit() : Unit = {
-    val num = dataFrame.select("commit").count()
-    println(num)
+    val df = dataFrame
+      .withColumn("commitSize",size(col("payload.commits")))
+      .withColumn("id", lit("id"))
+      .groupBy("id", "commitSize").agg(
+      when(col("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
+    )
+
+    df.select("totSizeCommit", "id").agg(sum("totSizeCommit").as("totale")).show()
   }
+
   // numero commit per attore
   def NumeroCommitPerActor() : Unit = {
-    import org.apache.spark.sql.functions.lit
-    import org.apache.spark.sql.functions.when
-    import org.apache.spark.sql.functions.sum
-    import org.apache.spark.sql.functions.size
+
     dataFrame
       .select("*")
       .withColumn("commitSize",size(col("payload.commits")))
       .groupBy("actor").agg(
-      sum("commitSize").as("totSizeCommit")
+      when(sum("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
     ).show()
+
+
 /*
     dataFrame.show()
     val payloadDF = dataFrame.select("payload.*").distinct()

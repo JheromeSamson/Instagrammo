@@ -26,7 +26,9 @@ class GitHubManager(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
 
     //new ManagerRDD(rdd, SQLContext)
 
-    new ManagerDATAFRAME(dataFrame, SQLContext).SingoliTipiType()
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroCommit()
+
+    new ManagerRDD(rdd, SQLContext).TotaleCommit()
 
 
    // ActorManagerRddToDataFrame()
@@ -88,8 +90,8 @@ class GitHubManager(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
   }
 */
   def dataFrameToRDD() : RDD[GitHubData] = {
-    val data : Dataset[Row] = SQLContext.sql("select * from DataExtracted")//.limit(2000)
-
+    //val data : Dataset[Row] = SQLContext.sql("select * from DataExtracted")//.limit(2000)
+    val data = dataFrame
     import SQLContext.implicits._
 
     return data.as[GitHubData].rdd

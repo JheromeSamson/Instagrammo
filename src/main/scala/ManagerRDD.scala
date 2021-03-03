@@ -1,4 +1,4 @@
-import bean.{Actor, GitHubData}
+import bean.{Actor, Commits, GitHubData}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.joda.time.DateTime
@@ -154,11 +154,30 @@ class ManagerRDD(val rdd : RDD[GitHubData], val SQLContext: SQLContext) {
     })
   }
 
-  //Contare il numero di «commit»;
+  //Contare il numero di «commit»
   def TotaleCommit() : Unit = {
-    //rdd.map(x => (x.payload.commits.map))
+    val c = rdd.map(x => (1, x.payload.commits))
+    c.foreach(x => println(x))
+    def seq = (lengthArray: Int, commitsArray : Array[Commits]) => if (commitsArray == null) lengthArray else lengthArray + commitsArray.length
+
+    def com = (x: Int, y : Int) => x + y
+
+    c.aggregateByKey(0)(seq, com ).foreach(x => println(x))
+
   }
 
+  //Contare il numero di «commit» per attore
+  def TotaleCommitPerAttore() : Unit = {
+    val c = rdd.map(x => (x.actor, x.payload.commits))
+
+    def seq = (lengthArray: Int, commitsArray : Array[Commits]) => if (commitsArray == null) lengthArray else lengthArray + commitsArray.length
+
+    def com = (x: Int, y : Int) => x + y
+
+    val r = c.aggregateByKey(0)(seq, com )
+
+    r.foreach(x => println(x))
+  }
 
 
 }
