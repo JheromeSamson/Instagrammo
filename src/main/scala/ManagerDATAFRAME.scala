@@ -1,6 +1,6 @@
 import org.apache.spark.sql
 import org.apache.spark.sql.{Row, SQLContext}
-import org.apache.spark.sql.functions.{col, explode, hour, max, minute, second, size, sum}
+import org.apache.spark.sql.functions.{col, explode, hour, max, minute, second, size, sum, min, when, count}
 
 class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
 
@@ -199,7 +199,7 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
     ).show()
   }
 
-  // Numero commit divisi per type e ??????actor?????
+  // Numero commit divisi per type e actor ????????event?????????
   def NumeroCommitPerTypeActorEvent(): Unit = {
     //dataFrame.withColumn("commitSize", size(col("payload.commits"))).groupBy("`type`","actor")
   }
@@ -240,7 +240,9 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .withColumn("seconds", second(col("created_at")))
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("seconds" ).agg(
-      sum("commitSize").as("totSizeCommit")
+      when(sum("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
     )
 
     df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
@@ -255,7 +257,9 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .select("*")
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("actor" ).agg(
-      sum("commitSize").as("totSizeCommit")
+      when(sum("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
     )
 
     df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
@@ -270,7 +274,9 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .select("*")
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("actor" ).agg(
-      sum("commitSize").as("totSizeCommit")
+      when(sum("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
     )
 
     df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
@@ -278,6 +284,190 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
   }
 
 
+  //Numero Minimo commit per repo
+  def MassimoCommitPerRepo(): Unit = {
 
+    val df = dataFrame
+      .select("*")
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("repo" ).agg(
+      when(sum("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
+    )
+
+    df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
+
+  }
+
+  //Numero Minimo commit per repo
+  def MinimoCommitPerRepo(): Unit = {
+
+    import org.apache.spark.sql.functions.min
+    val df = dataFrame
+      .select("*")
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("repo" ).agg(
+      when(sum("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
+    )
+
+    df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
+
+  }
+
+  //Numero Minimo commit per secondo e actor
+  def MassimoCommitPerSecondoActor(): Unit = {
+
+    val df = dataFrame
+      .select("*")
+      .withColumn("seconds", second(col("created_at")))
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("seconds", "actor" ).agg(
+      when(sum("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
+    )
+
+    df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
+
+  }
+
+  //Numero Minimo commit per repo
+  def MinimoCommitPerSecondoActor(): Unit = {
+
+    import org.apache.spark.sql.functions.min
+    val df = dataFrame
+      .select("*")
+      .withColumn("seconds", second(col("created_at")))
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("seconds", "actor" ).agg(
+      when(sum("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
+    )
+
+    df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
+
+  }
+
+
+  //Numero Minimo commit per secondo e actor
+  def MassimoCommitPerSecondoRepo(): Unit = {
+
+    val df = dataFrame
+      .select("*")
+      .withColumn("seconds", second(col("created_at")))
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("seconds", "repo" ).agg(
+      when(sum("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
+    )
+
+    df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
+
+  }
+
+  //Numero Minimo commit per Secondo repo
+  def MinimoCommitPerSecondoRepo(): Unit = {
+
+    import org.apache.spark.sql.functions.min
+    val df = dataFrame
+      .select("*")
+      .withColumn("seconds", second(col("created_at")))
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("seconds", "repo" ).agg(
+      when(sum("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
+    )
+
+    df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
+
+  }
+
+
+  //Numero Minimo commit per secondo e actor actor
+  def MassimoCommitPerSecondoRepoActor(): Unit = {
+
+    val df = dataFrame
+      .select("*")
+      .withColumn("seconds", second(col("created_at")))
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("seconds", "repo" ).agg(
+      when(sum("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
+    )
+
+    df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
+
+  }
+
+  //Numero Minimo commit per secondo repo actor
+  def MinimoCommitPerSecondoRepoActor(): Unit = {
+
+    import org.apache.spark.sql.functions.min
+    val df = dataFrame
+      .select("*")
+      .withColumn("seconds", second(col("created_at")))
+      .withColumn("commitSize", size(col("payload.commits")))
+      .groupBy("seconds", "repo" ).agg(
+      when(sum("commitSize") < 0, 0)
+        .otherwise(sum("commitSize"))
+        .as("totSizeCommit")
+    )
+
+    df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
+
+  }
+
+  def NumeroActorAttiviPerSecondo(): Unit = {
+    //TODO
+  }
+
+  def NumeroActorPerTypeSecondo() : Unit ={
+    dataFrame
+        .select("*")
+      .withColumn("seconds", second(col("created_at")))
+      .groupBy("type", "seconds" ).agg(
+      count("actor")
+    ).show()
+  }
+
+  def NumeroActorPerRepoTypeSecondo() : Unit ={
+    dataFrame
+      .select("*")
+      .withColumn("seconds", second(col("created_at")))
+      .groupBy("repo","type",  "seconds" ).agg(
+      count("actor")
+    ).show()
+  }
+
+  def MassimoNumeroActorAttivoPerSecondo() : Unit = {
+    //TODO
+  }
+
+  def MinimoNumeroActorAttivoPerSecondo() : Unit = {
+    //TODO
+  }
+
+  def MassimoNumeroActorAttivoPerSecondoType() : Unit = {
+    //TODO
+  }
+
+  def MinimoNumeroActorAttivoPerSecondoType() : Unit = {
+    //TODO
+  }
+
+  def MassimoNumeroActorAttivoPerSecondoTypeRepo() : Unit = {
+    //TODO
+  }
+
+  def MinimoNumeroActorAttivoPerSecondoTypeRepo() : Unit = {
+    //TODO
+  }
 
 }
