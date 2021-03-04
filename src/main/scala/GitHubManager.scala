@@ -26,9 +26,9 @@ class GitHubManager(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
 
     //new ManagerRDD(rdd, SQLContext)
 
-    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroCommit()
+    new ManagerDATAFRAME(dataFrame, SQLContext).MassimoCommitPerSecondo()
 
-    new ManagerRDD(rdd, SQLContext).TotaleCommit()
+    new ManagerRDD(rdd, SQLContext).MassimoCommitPerSecondo()
 
 
    // ActorManagerRddToDataFrame()

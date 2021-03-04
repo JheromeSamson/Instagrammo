@@ -43,7 +43,14 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
 
   //Contare il numero di «event» (con «event» intendo l’oggeto principale del json parsato) per ogni «actor»;
   def NumeroEvent():  Unit =  {
-    dataFrame.groupBy("actor").count().show()
+    dataFrame.select("*")
+      .withColumn("actor", col("actor"))
+      .withColumn("contatore", lit("type"))
+      .distinct()
+      .groupBy("actor").agg(
+      count(col("contatore"))
+        .as("totSizeEvent")
+    ).show()
   }
 
   //Contare il numero di «event», divisi per «type» e «actor»;
@@ -214,7 +221,7 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
     //dataFrame.withColumn("commitSize", size(col("payload.commits"))).groupBy("`type`","actor")
   }
 
-  // Numero commit divisi per type e Second
+  // Numero commit divisi per type actor e Second
   def NumeroCommitPerTypeActorSecond(): Unit = {
     dataFrame
       .select("*")
@@ -234,10 +241,10 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .withColumn("seconds", second(col("created_at")))
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("seconds" ).agg(
-      sum("commitSize").as("totSizeCommit")
-    )
+      max("commitSize").as("totSizeCommit")
+    ).show()
 
-    df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
+    //df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
 
   }
 
@@ -250,12 +257,12 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .withColumn("seconds", second(col("created_at")))
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("seconds" ).agg(
-      when(sum("commitSize") < 0, 0)
-        .otherwise(sum("commitSize"))
+      when(min("commitSize") < 0, 0)
+        .otherwise(min("commitSize"))
         .as("totSizeCommit")
-    )
+    ).show()
 
-    df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
+    //df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
 
   }
 
@@ -267,12 +274,12 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .select("*")
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("actor" ).agg(
-      when(sum("commitSize") < 0, 0)
-        .otherwise(sum("commitSize"))
+      when(max("commitSize") < 0, 0)
+        .otherwise(max("commitSize"))
         .as("totSizeCommit")
-    )
+    ).show()
 
-    df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
+    //df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
 
   }
 
@@ -284,12 +291,12 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .select("*")
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("actor" ).agg(
-      when(sum("commitSize") < 0, 0)
-        .otherwise(sum("commitSize"))
+      when(min("commitSize") < 0, 0)
+        .otherwise(min("commitSize"))
         .as("totSizeCommit")
-    )
+    ).show()
 
-    df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
+    //df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
 
   }
 
@@ -301,12 +308,12 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .select("*")
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("repo" ).agg(
-      when(sum("commitSize") < 0, 0)
-        .otherwise(sum("commitSize"))
+      when(max("commitSize") < 0, 0)
+        .otherwise(max("commitSize"))
         .as("totSizeCommit")
-    )
+    ).show()
 
-    df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
+    //df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
 
   }
 
@@ -318,8 +325,8 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .select("*")
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("repo" ).agg(
-      when(sum("commitSize") < 0, 0)
-        .otherwise(sum("commitSize"))
+      when(min("commitSize") < 0, 0)
+        .otherwise(min("commitSize"))
         .as("totSizeCommit")
     )
 
@@ -335,12 +342,12 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .withColumn("seconds", second(col("created_at")))
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("seconds", "actor" ).agg(
-      when(sum("commitSize") < 0, 0)
-        .otherwise(sum("commitSize"))
+      when(max("commitSize") < 0, 0)
+        .otherwise(max("commitSize"))
         .as("totSizeCommit")
-    )
+    ).show()
 
-    df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
+    //df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
 
   }
 
@@ -353,12 +360,12 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .withColumn("seconds", second(col("created_at")))
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("seconds", "actor" ).agg(
-      when(sum("commitSize") < 0, 0)
-        .otherwise(sum("commitSize"))
+      when(min("commitSize") < 0, 0)
+        .otherwise(min("commitSize"))
         .as("totSizeCommit")
-    )
+    ).show()
 
-    df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
+    //df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
 
   }
 
@@ -371,12 +378,12 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .withColumn("seconds", second(col("created_at")))
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("seconds", "repo" ).agg(
-      when(sum("commitSize") < 0, 0)
-        .otherwise(sum("commitSize"))
+      when(max("commitSize") < 0, 0)
+        .otherwise(max("commitSize"))
         .as("totSizeCommit")
-    )
+    ).show()
 
-    df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
+    //df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
 
   }
 
@@ -389,12 +396,12 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .withColumn("seconds", second(col("created_at")))
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("seconds", "repo" ).agg(
-      when(sum("commitSize") < 0, 0)
-        .otherwise(sum("commitSize"))
+      when(min("commitSize") < 0, 0)
+        .otherwise(min("commitSize"))
         .as("totSizeCommit")
-    )
+    ).show()
 
-    df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
+    //df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
 
   }
 
@@ -407,12 +414,12 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .withColumn("seconds", second(col("created_at")))
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("seconds", "repo" ).agg(
-      when(sum("commitSize") < 0, 0)
-        .otherwise(sum("commitSize"))
+      when(max("commitSize") < 0, 0)
+        .otherwise(max("commitSize"))
         .as("totSizeCommit")
-    )
+    ).show()
 
-    df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
+    //df.select("totSizeCommit").agg(max("totSizeCommit").as("massimoCommit")).show()
 
   }
 
@@ -425,12 +432,12 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .withColumn("seconds", second(col("created_at")))
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("seconds", "repo" ).agg(
-      when(sum("commitSize") < 0, 0)
-        .otherwise(sum("commitSize"))
+      when(min("commitSize") < 0, 0)
+        .otherwise(min("commitSize"))
         .as("totSizeCommit")
-    )
+    ).show()
 
-    df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
+    //df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
 
   }
 
