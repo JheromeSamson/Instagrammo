@@ -14,7 +14,6 @@ object HelloWorld {
 
   def main(args: Array[String]): Unit = {
 
-    //downloadFile()
 
     val conf = new SparkConf()
       .setMaster("local[2]")
@@ -23,17 +22,23 @@ object HelloWorld {
     val sc = new SparkContext(conf)
 
     val sqlContext = new SQLContext(sc)
+
+    /** DECOMMENTARE SE SI VUOLE SCARICARE EVENT CON DATA DIVERSA**/
+    downloadFile(sc,args )
+
+    val jsonDF= sqlContext.read.json(s"C:\\Users\\jhero\\IdeaProjects\\BigData\\download\\${dateDownload}${extensionFile}")
+
     val schema = ScalaReflection.schemaFor[GitHubDataForSchema].dataType.asInstanceOf[StructType]
 
-    val jsonDF = sqlContext.read.json("download\\")
+    //val jsonDF = sqlContext.read.json(s"download\\")
 
-    val newJsonDF = jsonDF.withColumnRenamed("default","type")
-    val newJsonDF1 = newJsonDF.withColumnRenamed("public","publicField")
+    val newJsonDF1 =
+      jsonDF.withColumnRenamed("public","publicField")
+            .withColumnRenamed("default","type")
 
     createTableFromJson(newJsonDF1, sqlContext)
 
     val data : Dataset[Row] = sqlContext.sql("select * from DataExtracted").limit(100).toDF()
-
     import sqlContext.implicits._
 
     val rdd : RDD[GitHubData] = data.as[GitHubData].rdd
@@ -73,10 +78,11 @@ object HelloWorld {
   }
 
 
-  def downloadFile(): Unit = {
+  def downloadFile(sc: SparkContext, args: Array[String]): Unit = {
     val u = new Utilities()
 
     u.fileDownloader(dateDownload)
+
   }
 
 }

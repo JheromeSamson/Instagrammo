@@ -1,10 +1,16 @@
 package utils
 
 import java.io.{File, PrintWriter}
+
 import scala.io.Source
 import java.net.{HttpURLConnection, URL}
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 import java.io.FileOutputStream
+
+import org.apache.hadoop.io.compress.GzipCodec
+import org.apache.spark
+import org.apache.spark.SparkContext
+
 import scala.sys.process._
 
 class Utilities {
@@ -51,12 +57,7 @@ class Utilities {
     else
       url #> new File("vediamo") !!
 
-  }
 
-
-
-
-  def parsing(): Unit = {
   }
 
 /*
