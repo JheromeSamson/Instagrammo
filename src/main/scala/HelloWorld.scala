@@ -7,6 +7,7 @@ import org.apache.spark.sql.catalyst.ScalaReflection
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import utils.Utilities
 
+
 object HelloWorld {
 
   val dateDownload = "2018-03-01-0"
@@ -19,12 +20,14 @@ object HelloWorld {
       .setMaster("local[2]")
       .setAppName("CountingSheep")
 
+
+
     val sc = new SparkContext(conf)
 
     val sqlContext = new SQLContext(sc)
 
     /** DECOMMENTARE SE SI VUOLE SCARICARE EVENT CON DATA DIVERSA**/
-    downloadFile(sc,args )
+    //downloadFile(sc,args )
 
     val jsonDF= sqlContext.read.json(s"C:\\Users\\jhero\\IdeaProjects\\BigData\\download\\${dateDownload}${extensionFile}")
 
@@ -43,7 +46,7 @@ object HelloWorld {
 
     val rdd : RDD[GitHubData] = data.as[GitHubData].rdd
 
-    new GitHubManager(data, sqlContext).Actor()
+    new GitHubManager(data, sqlContext).manager()
 
 
 

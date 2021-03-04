@@ -13,35 +13,21 @@ class GitHubManager(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
 
   var rdd = dataFrameToRDD()
 
-  def Actor(): Unit = {
+  def manager(): Unit = {
+
+    new ManagerDATAFRAME(dataFrame, SQLContext).MassimoCommitPerSecondoRepoActor()
+
+    //new ManagerRDD(rdd, SQLContext).MassimoCommitPerSecondoRepoActor()
 
 
-    //var dataframe : sql.DataFrame = ActorManagerRddToDataFrame()
+  }
 
-    //val pairRdd : RDD[(String, Actor)] = ActorManagerRddToPairRdd()
+  def dataFrameToRDD() : RDD[GitHubData] = {
+    //val data : Dataset[Row] = SQLContext.sql("select * from DataExtracted")//.limit(2000)
+    val data = dataFrame
+    import SQLContext.implicits._
 
-    //var rddActor : RDD[Actor] = ActorManagerRddToRdd()
-
-    //var dataset : Dataset[Actor] = ActorManagerRddToDataSet(dataframe)
-
-    //new ManagerRDD(rdd, SQLContext)
-
-    new ManagerDATAFRAME(dataFrame, SQLContext).MassimoCommitPerSecondo()
-
-    new ManagerRDD(rdd, SQLContext).MassimoCommitPerSecondo()
-
-
-   // ActorManagerRddToDataFrame()
-    //NumeroEventPresente(pairRdd)
-    //NumeroEventDivisiPerTypeActor()
-    //NumeroEventDivisiPerTypeActorRepoSecondi()
-    //MassimoPerSecondo()
-    //MinimoPerSecondo()
-    //MassimoPerAttore()
-    //MinimoPerAttore()
-    //MassimoPerRepo()
-   // MinimoPerRepo()
-
+    return data.as[GitHubData].rdd
   }
 /*
   def rddToDataFrame() : Unit = {
@@ -88,20 +74,12 @@ class GitHubManager(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
   def ActorManagerRddToRdd() : RDD[Actor] = {
     return dataFrame.map(x => x.actor)
   }
-*/
-  def dataFrameToRDD() : RDD[GitHubData] = {
-    //val data : Dataset[Row] = SQLContext.sql("select * from DataExtracted")//.limit(2000)
-    val data = dataFrame
-    import SQLContext.implicits._
 
-    return data.as[GitHubData].rdd
-  }
-/*
   def ActorManagerRddToDataSet(dataFrameActor : sql.DataFrame) :  Dataset[Actor] = {
     dataset = dataFrameActor.as[Actor]
     return dataset
   }
-*/
+
   //Contare il numero di «event» (con «event» intendo l’oggeto principale del json parsato) per ogni «actor»;
   def NumeroEventPresente(rddActor: RDD[(String, Actor)]) : Unit = {
     println("Numero Di event " + rddActor.count())
@@ -254,7 +232,6 @@ class GitHubManager(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
 
 
 
-  /*
     def createDataFrameStruct(): StructType = StructType(Seq(
       StructField("id", StringType, true),
       StructField("login" ,StringType , true),
@@ -265,6 +242,6 @@ class GitHubManager(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
     ))
 
 
+*/
 
-  */
 }
