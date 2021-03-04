@@ -15,11 +15,36 @@ class GitHubManager(val dataFrame : sql.DataFrame, val SQLContext: SQLContext) {
 
   def manager(): Unit = {
 
-    new ManagerDATAFRAME(dataFrame, SQLContext).MassimoCommitPerSecondoRepoActor()
+    new ManagerDATAFRAME(dataFrame, SQLContext).MassimoCommitPerActor()
+/*    new ManagerDATAFRAME(dataFrame, SQLContext).SingoliAuthorNelCommit()
+    new ManagerDATAFRAME(dataFrame, SQLContext).SingloliRepo()
+    new ManagerDATAFRAME(dataFrame, SQLContext).SingoliTipiType()
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroActor()
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroRepo()
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroEvent()
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroEventPerActor()
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroEventPerTypeActorRepo()
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroMassimoEventPerSecondo()
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroMininoEventPerSecondo()
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroMinimoEventPerActor()
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroMassimoEventPerRepo()
+    new ManagerDATAFRAME(dataFrame, SQLContext).NumeroMassimoEventPerRepo()
+*/
+    new ManagerRDD(rdd, SQLContext).MassimoCommitPerSecondoActor()
+ /*   new ManagerRDD(rdd, SQLContext).SingloliRepo()
+    new ManagerRDD(rdd, SQLContext).SingoliTipiType()
+    new ManagerRDD(rdd, SQLContext).NumeroRepo()
+    new ManagerRDD(rdd, SQLContext).NumeroEvent()
+    new ManagerRDD(rdd, SQLContext).NumeroEventDivisiPerTypeActor()
+    new ManagerRDD(rdd, SQLContext).NumeroEventDivisiPerTypeActorRepo()
+    new ManagerRDD(rdd, SQLContext).NumeroEventDivisiPerTypeActorRepoSecondi()
+    new ManagerRDD(rdd, SQLContext).MassimoPerSecondo()
+    new ManagerRDD(rdd, SQLContext).MinimoPerSecondo()
+    new ManagerRDD(rdd, SQLContext).MassimoPerAttore()
+    new ManagerRDD(rdd, SQLContext).MinimoPerAttore()
+    new ManagerRDD(rdd, SQLContext).MassimoPerRepo()
 
-    //new ManagerRDD(rdd, SQLContext).MassimoCommitPerSecondoRepoActor()
-
-
+*/
   }
 
   def dataFrameToRDD() : RDD[GitHubData] = {

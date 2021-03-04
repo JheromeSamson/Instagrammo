@@ -12,6 +12,13 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
   def SingoliActor(): Unit =
     dataFrame.select("actor").distinct().show()
 
+  def SingoloAuthor(): Unit = {
+
+    val dfPayload = dataFrame.select("payload.").select(explode(col("commits"))).select("col.")
+      .select("author").distinct().show()
+
+  }
+
 //Trovare i singoli «actor» commits ;
   def SingoliAuthorNelCommit(): Unit = {
 
@@ -57,13 +64,18 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
     ).show()
   }
 
+  //Contare il numero di «event», divisi per «actor»;
+  def NumeroEventDivisiPerActor():  Unit = {
+    dataFrame.groupBy( "actor").count().show()
+  }
+
   //Contare il numero di «event», divisi per «type» e «actor»;
-  def NumeroEventPerActor():  Unit = {
+  def NumeroEventDivisiPerTypeActor():  Unit = {
     dataFrame.groupBy("`type`", "actor").count().show()
   }
 
   // Contare il numero di «event», divisi per «type», «actor», «repo»;
-  def NumeroEventPerTypeActorRepo() : Unit= {
+  def NumeroEventDivisiPerTypeActorRepo() : Unit= {
     dataFrame.groupBy("`type`", "actor", "repo").count().show()
   }
 
@@ -76,9 +88,9 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
 
   // Trovare il massimo numero di event per secondo
   def NumeroMassimoEventPerSecondo() :  Unit = {
-    dataFrame.withColumn("seconds", second(col("created_at")))
-      .groupBy().max().show()
+    val df = dataFrame.select(col("actor"), second(col("created_at")).as("seconds")).show()
   }
+
   // Trovare il minimo numero di event per secondo
   def NumeroMininoEventPerSecondo() :  Unit = {
     dataFrame.withColumn("seconds", second(col("created_at")))
@@ -146,6 +158,18 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
   def NumeroMinimoEventPerSecondoRepoActor() : Unit = {
     dataFrame.withColumn("seconds", second(col("created_at")))
       .groupBy("repo", "actor").min().show()
+
+    val partition = Window
+      .partitionBy(col( "seconds"),col("commitSize"))
+      .orderBy(col( "seconds"),col("commitSize"))
+    /*
+        df
+          .withColumn("min", f.min("commitSize").over(partition))
+          .where(
+            (f.col("seconds") == f.col("seconds"))
+          )
+
+     */
   }
 
   //num commit
@@ -232,8 +256,12 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .withColumn("seconds", second(col("created_at")))
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("`type`", "actor", "seconds" ).agg(
+      when(col("commitSize") < 0, 0)
+        .otherwise(min("commitSize")),
       sum("commitSize").as("totSizeCommit")
     ).show()
+
+
   }
 
   //MASSimo Numero Per Secondo di commit
@@ -350,7 +378,7 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
   }
 
 
-  //Numero Minimo commit per repo
+  //Numero Massimo commit per repo
   def MassimoCommitPerRepo(): Unit = {
 
     val df = dataFrame
@@ -508,7 +536,7 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
       .withColumn("seconds", second(col("created_at")))
       .withColumn("commitSize", size(col("payload.commits")))
       .groupBy("seconds", "repo" ).agg(
-      when(min(col("commitSize") < 0 || col("commitSize")) < 0, 0)
+      when(min(col("commitSize") < 0 || col("commitSize")< 0) , 0)
         .otherwise(min("commitSize"))
         .as("totSizeCommit")
     ).show()
@@ -571,102 +599,112 @@ class ManagerDATAFRAME(val dataFrame : sql.DataFrame, val SQLContext: SQLContext
 
     import org.apache.spark.sql.functions.min
     val df = dataFrame
-      .select("*")
-      .withColumn("seconds", second(col("created_at")))
-      .withColumn("commitSize", size(col("payload.commits")))
-      .groupBy("seconds", "repo", "actor" ).agg(
+        dataFrame.select(col("repo"), col("actor"), second(col("created_at")).as("seconds"), size(col("payload.commits")).as("commitSize"))
+          .groupBy( "repo", "actor","seconds" )
+      .agg(
       when(min("commitSize") < 0, 0)
         .otherwise(min("commitSize"))
         .as("totSizeCommit")
-    )
-
-    val partition = Window
-      .partitionBy(col("seconds"),col( "repo"),col( "repo"),col("commitSize"))
-      .orderBy(col("seconds"),col( "repo"),col( "actor"),col("commitSize"))
-
-    /*
-        df
-          .withColumn("min", f.min("commitSize").over(partition))
-          .where(
-            (f.col("seconds") == f.col("seconds") &&
-              f.col("repo") == f.col("repo") &&
-              f.col("actor") == f.col("actor")
-              )
-          )
-    */
-    df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
-
-  }
-
-  def NumeroActorAttiviPerSecondo(): Unit = {
-    dataFrame
-      .select("*")
-      .withColumn("seconds", second(col("created_at")))
-      .groupBy("seconds" ).agg(
-      count("actor")
-    ).show()
-  }
-
-  def NumeroActorPerTypeSecondo() : Unit ={
-    dataFrame
-        .select("*")
-      .withColumn("seconds", second(col("created_at")))
-      .groupBy("type", "seconds" ).agg(
-      count("actor")
-    ).show()
-  }
-
-  def NumeroActorPerRepoTypeSecondo() : Unit ={
-    dataFrame
-      .select("*")
-      .withColumn("seconds", second(col("created_at")))
-      .groupBy("repo","type",  "seconds" ).agg(
-      count("actor")
-    ).show()
-  }
-
-  def MassimoNumeroActorAttivoPerSecondo() : Unit = {
-    val df = dataFrame
-      .select("*")
-      .withColumn("seconds", second(col("created_at")))
-      .groupBy("seconds", "actor" ).agg(
-      count("actor").as("numActorsPerSecond")
-    )
-    df.select("numActorsPerSecond").agg(min("numActorsPerSecond").as("massimoAttori")).show()
-  }
-
-  def MinimoNumeroActorAttivoPerSecondo() : Unit = {
-    val df = dataFrame
-      .select("*")
-      .withColumn("seconds", second(col("created_at")))
-      .groupBy("seconds", "actor" ).agg(
-      count("actor").as("numActorsPerSecond")
     ).show()
 
-    //df.select("numActorsPerSecond").agg(min("numActorsPerSecond").as("massimoAttori")).show()
-  }
+    val dd = dataFrame.select(col("repo"), col("actor"), second(col("created_at")).as("seconds"), size(col("payload.commits")))
+    .groupBy( "repo", "actor","seconds" )
 
-  def MassimoNumeroActorAttivoPerSecondoType() : Unit = {
-    val df = dataFrame
+
+   // dd.select(col("repo"), col("actor"),col()
+     // .over(Window.partitionBy("repo")) as "conta" ).show()
+
+
+/*
+
+  val partition = Window
+    .partitionBy(col("seconds"),col( "repo"),col( "repo"),col("commitSize"))
+    .orderBy(col("seconds"),col( "repo"),col( "actor"),col("commitSize"))
+
+
+
+   f
+        .withColumn("min", f.min("commitSize").over(partition))
+        .where(
+          (f.col("seconds") == f.col("seconds") &&
+            f.col("repo") == f.col("repo") &&
+            f.col("actor") == f.col("actor")
+            )
+        )
+  */
+  //df.select("totSizeCommit").agg(min("totSizeCommit").as("massimoCommit")).show()
+
+}
+
+def NumeroActorAttiviPerSecondo(): Unit = {
+  dataFrame
+    .select("*")
+    .withColumn("seconds", second(col("created_at")))
+    .groupBy("seconds" ).agg(
+    count("actor")
+  ).show()
+}
+
+def NumeroActorPerTypeSecondo() : Unit ={
+  dataFrame
       .select("*")
-      .withColumn("seconds", second(col("created_at")))
-      .groupBy("seconds" ).agg(
-      count("actor").as("numActorsPerSecond")
-    )
+    .withColumn("seconds", second(col("created_at")))
+    .groupBy("type", "seconds" ).agg(
+    count("actor")
+  ).show()
+}
 
-    df.select("numActorsPerSecond").agg(max("numActorsPerSecond").as("massimoAttori")).show()
-  }
+def NumeroActorPerRepoTypeSecondo() : Unit ={
+  dataFrame
+    .select("*")
+    .withColumn("seconds", second(col("created_at")))
+    .groupBy("repo","type",  "seconds" ).agg(
+    count("actor")
+  ).show()
+}
 
-  def MinimoNumeroActorAttivoPerSecondoType() : Unit = {
-    //TODO
-  }
+def MassimoNumeroActorAttivoPerSecondo() : Unit = {
+  val df = dataFrame
+    .select("*")
+    .withColumn("seconds", second(col("created_at")))
+    .groupBy("seconds", "actor" ).agg(
+    count("actor").as("numActorsPerSecond")
+  )
+  df.select("numActorsPerSecond").agg(min("numActorsPerSecond").as("massimoAttori")).show()
+}
 
-  def MassimoNumeroActorAttivoPerSecondoTypeRepo() : Unit = {
-    //TODO
-  }
+def MinimoNumeroActorAttivoPerSecondo() : Unit = {
+  val df = dataFrame
+    .select("*")
+    .withColumn("seconds", second(col("created_at")))
+    .groupBy("seconds", "actor" ).agg(
+    count("actor").as("numActorsPerSecond")
+  ).show()
 
-  def MinimoNumeroActorAttivoPerSecondoTypeRepo() : Unit = {
-    //TODO
-  }
+  //df.select("numActorsPerSecond").agg(min("numActorsPerSecond").as("massimoAttori")).show()
+}
+
+def MassimoNumeroActorAttivoPerSecondoType() : Unit = {
+  val df = dataFrame
+    .select("*")
+    .withColumn("seconds", second(col("created_at")))
+    .groupBy("seconds" ).agg(
+    count("actor").as("numActorsPerSecond")
+  )
+
+  df.select("numActorsPerSecond").agg(max("numActorsPerSecond").as("massimoAttori")).show()
+}
+
+def MinimoNumeroActorAttivoPerSecondoType() : Unit = {
+  //TODO
+}
+
+def MassimoNumeroActorAttivoPerSecondoTypeRepo() : Unit = {
+  //TODO
+}
+
+def MinimoNumeroActorAttivoPerSecondoTypeRepo() : Unit = {
+  //TODO
+}
 
 }

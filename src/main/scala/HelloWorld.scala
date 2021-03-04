@@ -1,11 +1,17 @@
+
 import bean.{Actor, Author, GitHubData, GitHubDataForSchema, Payload}
 import org.apache.spark
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Dataset, Encoder, Encoders, Row, SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.catalyst.ScalaReflection
+import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import utils.Utilities
+import org.apache.spark.sql.functions.{col, count, explode, hour, lit, max, min, minute, second, size, sum, when}
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.expressions.Window
 
 
 object HelloWorld {
@@ -41,7 +47,7 @@ object HelloWorld {
 
     createTableFromJson(newJsonDF1, sqlContext)
 
-    val data : Dataset[Row] = sqlContext.sql("select * from DataExtracted").limit(100).toDF()
+    val data : Dataset[Row] = sqlContext.sql("select * from DataExtracted").limit(500).toDF()
     import sqlContext.implicits._
 
     val rdd : RDD[GitHubData] = data.as[GitHubData].rdd
@@ -87,5 +93,6 @@ object HelloWorld {
     u.fileDownloader(dateDownload)
 
   }
+
 
 }
